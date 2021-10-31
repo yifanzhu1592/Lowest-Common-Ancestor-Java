@@ -69,4 +69,97 @@ public class LowestCommonAncestor {
             }
         }
     }
+
+    // return the key of the LCA
+    public static int getDAG_LCA(DAG theDAG, int keyA, int keyB) {
+        DAG.treeNode curNode = theDAG.head;
+
+        int theNodeKey = bothInSubtreeOf(curNode, keyA, keyB);
+        if (theNodeKey < 0)
+            return -1;
+        return theNodeKey;
+    }
+
+    public static final int FOUND_A = -2;
+    public static final int FOUND_B = -3;
+
+    // recursive function that traverses the tree and find the LCA
+    private static int bothInSubtreeOf(DAG.treeNode curNode, int keyA, int keyB) {
+        int curNodeVal = curNode.key;
+        boolean foundA = false;
+        boolean foundB = false;
+        for (int i = 0; i < curNode.children.size(); i++) {
+            int subTreeOf = bothInSubtreeOf(curNode.children.get(i), keyA, keyB);
+            if (subTreeOf >= 0) {
+                return subTreeOf;
+            } else {
+                if (subTreeOf == FOUND_B)
+                    foundB = true;
+                if (subTreeOf == FOUND_A)
+                    foundA = true;
+            }
+        }
+        if ((foundA && (foundB || curNodeVal == keyB)) || (foundB && curNodeVal == keyA))
+            return curNodeVal;
+
+        if (curNodeVal == keyA && curNodeVal == keyB)
+            return curNodeVal;
+
+        if (foundA || curNodeVal == keyA)
+            return FOUND_A;
+        if (foundB || curNodeVal == keyB)
+            return FOUND_B;
+
+        return -1;
+    }
+
+    // the DAG version
+    public class DAG {
+        treeNode head = null;
+
+        public void addNode(int key, ArrayList<treeNode> parents) {
+            treeNode theNode = new treeNode(key);
+            if (head == null)
+                head = theNode;
+            if (parents != null)
+                for (treeNode parentNode : parents)
+                    if (parentNode != null)
+                        parentNode.children.add(theNode);
+        }
+
+        public treeNode getNode(int key) {
+            if (head != null) {
+                return getNodeDFS(key, head);
+            }
+            return null;
+        }
+
+        private treeNode getNodeDFS(int key, treeNode node) {
+            for (treeNode child : node.children) {
+                treeNode theRetNode = getNodeDFS(key, child);
+                if (theRetNode != null)
+                    return theRetNode;
+            }
+            if (node.key == key)
+                return node;
+            return null;
+        }
+
+        public String printChildren(treeNode node) {
+            String children = "";
+            for (treeNode child : node.children)
+                children += child.key + " ";
+            return children;
+        }
+
+        class treeNode {
+            public ArrayList<treeNode> children;
+            public int key;
+
+            treeNode(int key) {
+                children = new ArrayList<treeNode>();
+                this.key = key;
+            }
+        }
+    }
 }
